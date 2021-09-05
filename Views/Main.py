@@ -98,12 +98,15 @@ class Ui_MainWindow(object):
         self.progressBar.setProperty("value", 0)
         self.progressBar.setTextVisible(False)
         self.progressBar.setObjectName("progressBar")
+        self.downloadStatus = QtWidgets.QLabel(self.centralwidget)
+        self.downloadStatus.setGeometry(QtCore.QRect(10, 580, 771, 16))
+        self.downloadStatus.setStyleSheet("color: rgb(85, 255, 0);")
+        self.downloadStatus.setText("")
+        self.downloadStatus.setObjectName("downloadStatus")
         MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
 
+        MainWindow.setFixedSize(800, 600)
         self.search.clicked.connect(self.setVideoData)
         self.downloadSong.clicked.connect(self.downloadAsSong)
         self.downloadVideo.clicked.connect(self.downloadAsVideo)

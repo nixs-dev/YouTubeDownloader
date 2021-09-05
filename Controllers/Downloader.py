@@ -30,4 +30,9 @@ class Downloader:
         file.download()
 
     def get_progress(self, stream, chunk, bytes_remaining):
-        self.window.progressBar.setValue(round(100 - ((bytes_remaining/self.size)*100)))
+        percentage = round(100 - ((bytes_remaining/self.size)*100))
+
+        self.window.progressBar.setValue(percentage)
+
+        if percentage == 100:
+            self.window.downloadStatus.setText('Download Finalizado')
