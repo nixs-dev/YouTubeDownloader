@@ -1,4 +1,10 @@
-from Controllers.Downloader import Downloader
+from Views.Main import Ui_MainWindow
+from PyQt5 import QtWidgets
+import sys
 
-d = Downloader('LINK AQUI')
-d.download('video')
+app = QtWidgets.QApplication(sys.argv)
+MainWindow = QtWidgets.QMainWindow()
+ui = Ui_MainWindow()
+ui.setupUi(MainWindow)
+MainWindow.show()
+sys.exit(app.exec_())

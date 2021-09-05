@@ -3,9 +3,11 @@ from pytube import YouTube
 class Downloader:
     video = None
     size = 0
+    window = None
 
-    def __init__(self, link):
+    def __init__(self, link, window):
         self.video = YouTube(link, on_progress_callback=self.get_progress)
+        self.window = window
 
     def getVideoInfo(self):
         return self.video
@@ -28,4 +30,4 @@ class Downloader:
         file.download()
 
     def get_progress(self, stream, chunk, bytes_remaining):
-        print(str(round(100 - ((bytes_remaining/self.size)*100))) + '%')
+        self.window.progressBar.setValue(round(100 - ((bytes_remaining/self.size)*100)))
