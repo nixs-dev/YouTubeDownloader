@@ -44,10 +44,14 @@ class Ui_MainWindow(object):
         self.downloadSong.setEnabled(True)
 
     def downloadAsSong(self):
-        self.downloader.download('music')
+        self.downloader.setType('music')
+        self.downloader.start()
+        self.downloader.exec()
 
     def downloadAsVideo(self):
-        self.downloader.download('video')
+        self.downloader.setType('video')
+        self.downloader.start()
+        self.downloader.exec()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
