@@ -9,72 +9,9 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from Controllers.Downloader import Downloader
-from pytube import exceptions
-import urllib
+
 
 class Ui_MainWindow(object):
-    downloader = None
-
-    def setError(self):
-        self.videoTitle.setText('Nome: ');
-        self.videoChannel.setText('Canal: ');
-        self.videoThumbnail.setPixmap(QtGui.QPixmap());
-        self.downloadVideo.setEnabled(False)
-        self.downloadSong.setEnabled(False)
-
-    def setVideoThumbnail(self, url):
-        imageData = urllib.request.urlopen(url).read()
-
-        pixmap = QtGui.QPixmap()
-        pixmap.loadFromData(imageData)
-
-        self.videoThumbnail.setPixmap(pixmap)
-
-    def setVideoData(self):
-        link = self.link.text()
-
-        try:
-            self.downloader = Downloader(link, self)
-        except:
-            self.setError()
-
-            self.searchResult.setText('Link mal formatado!')
-            self.searchResult.setStyleSheet("color: rgb(255, 0, 0);")
-            return
-
-        info = self.downloader.getVideoInfo()
-
-        try:
-            title = info.title
-            author = info.author
-        except exceptions.VideoUnavailable:
-            self.setError()
-
-            self.searchResult.setText('Video indisponível!')
-            self.searchResult.setStyleSheet("color: rgb(255, 0, 0);")
-            return
-
-        self.setVideoThumbnail(info.thumbnail_url)
-
-        self.videoTitle.setText('Nome: ' + title)
-        self.videoChannel.setText('Canal: ' + author)
-        self.searchResult.setText('Video encontrado!')
-        self.searchResult.setStyleSheet("color: rgb(0, 255, 0);")
-
-        self.downloadVideo.setEnabled(True)
-        self.downloadSong.setEnabled(True)
-
-    def downloadAsSong(self):
-        self.downloader.setType('music')
-        self.downloader.start()
-        self.downloader.exec()
-
-    def downloadAsVideo(self):
-        self.downloader.setType('video')
-        self.downloader.start()
-        self.downloader.exec()
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(816, 703)
@@ -84,7 +21,7 @@ class Ui_MainWindow(object):
         self.logo = QtWidgets.QLabel(self.centralwidget)
         self.logo.setGeometry(QtCore.QRect(210, 60, 391, 131))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap("assets/logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap(":/icones/assets/logo.png"))
         self.logo.setScaledContents(True)
         self.logo.setObjectName("logo")
         self.link = QtWidgets.QLineEdit(self.centralwidget)
@@ -137,13 +74,6 @@ class Ui_MainWindow(object):
         self.downloadStatus.setObjectName("downloadStatus")
         MainWindow.setCentralWidget(self.centralwidget)
 
-        ####################################################################################################
-
-        MainWindow.setFixedSize(816, 703)
-        self.search.clicked.connect(self.setVideoData)
-        self.downloadSong.clicked.connect(self.downloadAsSong)
-        self.downloadVideo.clicked.connect(self.downloadAsVideo)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -156,3 +86,14 @@ class Ui_MainWindow(object):
         self.videoChannel.setText(_translate("MainWindow", "Canal:"))
         self.downloadSong.setText(_translate("MainWindow", "Baixar música"))
         self.downloadVideo.setText(_translate("MainWindow", "Baixar video"))
+import resources_rc
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
