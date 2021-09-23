@@ -1,5 +1,6 @@
 <RCC>
-  <qresource prefix="icones">
+  <qresource prefix="default">
     <file>assets/logo.png</file>
+    <file>assets/unavailable_video.jpg</file>
   </qresource>
 </RCC>

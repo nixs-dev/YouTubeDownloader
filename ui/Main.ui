@@ -30,7 +30,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="../resources.qrc">:/icones/assets/logo.png</pixmap>
+     <pixmap resource="../resources.qrc">:/default/assets/logo.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -69,7 +69,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>290</y>
+      <y>300</y>
       <width>771</width>
       <height>331</height>
      </rect>
@@ -92,6 +92,11 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 0, 0);</string>
      </property>
@@ -102,8 +107,8 @@
     <widget class="QLabel" name="videoTitle">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>200</y>
+       <x>340</x>
+       <y>40</y>
        <width>761</width>
        <height>16</height>
       </rect>
@@ -115,8 +120,8 @@
     <widget class="QLabel" name="videoChannel">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>220</y>
+       <x>340</x>
+       <y>60</y>
        <width>761</width>
        <height>16</height>
       </rect>
@@ -131,10 +136,10 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>260</x>
-       <y>290</y>
+       <x>330</x>
+       <y>200</y>
        <width>101</width>
-       <height>23</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
@@ -147,10 +152,10 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>370</x>
-       <y>290</y>
+       <x>440</x>
+       <y>200</y>
        <width>101</width>
-       <height>23</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
@@ -160,10 +165,10 @@
     <widget class="QLabel" name="videoThumbnail">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>10</x>
        <y>40</y>
        <width>301</width>
-       <height>141</height>
+       <height>211</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -171,6 +176,9 @@
      </property>
      <property name="text">
       <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../resources.qrc">:/default/assets/unavailable_video.jpg</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
