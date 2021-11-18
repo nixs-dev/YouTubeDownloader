@@ -9,76 +9,106 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from Controllers.Downloader import Downloader
 from pytube import exceptions
-import urllib
+from Controllers.Downloader import Downloader
+
 
 class Ui_MainWindow(object):
+    this_window = None
+    loading_movie = 'assets/loading.gif'
     downloader = None
 
-    def setError(self):
+    def loading_data_state(self, loading):
+        if loading:
+            movie = QtGui.QMovie(self.loading_movie)
+            self.data_state_icon.setMovie(movie)
+            movie.start()
+        else:
+            self.data_state_icon.movie().stop() if self.data_state_icon.movie() is not None else 0
+            self.data_state_icon.setMovie(QtGui.QMovie(''))
+
+    def set_current_video_as_none(self):
         self.videoTitle.setText('Nome: ');
         self.videoChannel.setText('Canal: ');
-        self.videoThumbnail.setPixmap(QtGui.QPixmap());
+        self.videoThumbnail.setPixmap(QtGui.QPixmap('assets/unavailable_video.jpg'))
         self.downloadVideo.setEnabled(False)
         self.downloadSong.setEnabled(False)
+        self.progressBar.setValue(0)
 
-    def setVideoThumbnail(self, url):
-        imageData = urllib.request.urlopen(url).read()
-
+    def set_video_thumbnail(self, image_data):
         pixmap = QtGui.QPixmap()
-        pixmap.loadFromData(imageData)
+        pixmap.loadFromData(image_data)
 
         self.videoThumbnail.setPixmap(pixmap)
 
-    def setVideoData(self):
+    def get_video_object(self):
         link = self.link.text()
+        self.set_current_video_as_none()
 
         try:
             self.downloader = Downloader(link, self)
         except:
-            self.setError()
+            self.set_current_video_as_none()
 
             self.searchResult.setText('Link mal formatado!')
             self.searchResult.setStyleSheet("color: rgb(255, 0, 0); border: none")
             return
 
-        info = self.downloader.getVideoInfo()
+        self.loading_data_state(True)
+
+        self.downloader.video_data_ready.connect(self.set_video_data)
+        self.downloader.start()
+        self.downloader.exec()
+
+    def set_video_data(self, info):
+        if info == {}:
+            QtWidgets.QMessageBox.critical(self.this_window, 'Falha na conexão', 'Não foi possível obter uma resposta'
+                                                                                 'do servidor. Tente novamente outra hora!')
+            self.loading_data_state(False)
+            return
 
         try:
-            title = info.title
-            author = info.author
+            title = info['title']
+            author = info['author']
         except exceptions.VideoUnavailable:
-            self.setError()
+            self.set_error()
 
             self.searchResult.setText('Video indisponível!')
             self.searchResult.setStyleSheet("color: rgb(255, 0, 0); border: none")
             return
 
-        self.setVideoThumbnail(info.thumbnail_url)
+        self.set_video_thumbnail(info['thumbnail'])
 
         self.videoTitle.setText('Nome: ' + title)
         self.videoChannel.setText('Canal: ' + author)
         self.searchResult.setText('Video encontrado!')
         self.searchResult.setStyleSheet("color: rgb(0, 255, 0); border: none")
 
+        self.loading_data_state(False)
         self.downloadVideo.setEnabled(True)
         self.downloadSong.setEnabled(True)
 
-    def downloadAsSong(self):
-        self.downloader.setType('music')
+    def download_as_song(self):
+        self.progressBar.setValue(0)
+        self.downloadStatus.setText('')
+        self.downloader.set_type('music')
+        self.downloader.run = self.downloader.start_download
         self.downloader.start()
-        self.downloader.exec()
 
-    def downloadAsVideo(self):
-        self.downloader.setType('video')
+    def download_as_video(self):
+        self.progressBar.setValue(0)
+        self.downloadStatus.setText('')
+        self.downloader.set_type('video')
+        self.downloader.run = self.downloader.start_download
         self.downloader.start()
-        self.downloader.exec()
 
-    def setupUi(self, MainWindow):
+    def setup_ui(self, MainWindow):
+        self.this_window = MainWindow
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(816, 703)
-        MainWindow.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(212, 32, 116, 255), stop:0.994318 rgba(255, 173, 173, 255));")
+        MainWindow.setStyleSheet(
+            "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(212, 32, 116, 255), stop:0.994318 rgba(255, 173, 173, 255));")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.logo = QtWidgets.QLabel(self.centralwidget)
@@ -91,26 +121,26 @@ class Ui_MainWindow(object):
         self.link = QtWidgets.QLineEdit(self.centralwidget)
         self.link.setGeometry(QtCore.QRect(12, 240, 701, 31))
         self.link.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border-radius: 10px;\n"
-"")
+                                "border-radius: 10px;\n"
+                                "")
         self.link.setObjectName("link")
         self.search = QtWidgets.QPushButton(self.centralwidget)
         self.search.setGeometry(QtCore.QRect(720, 240, 61, 31))
         self.search.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.search.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border: 1px solid black;\n"
-"border-radius: 10px;")
+                                  "border: 1px solid black;\n"
+                                  "border-radius: 10px;")
         self.search.setObjectName("search")
         self.videoData = QtWidgets.QFrame(self.centralwidget)
         self.videoData.setGeometry(QtCore.QRect(100, 300, 581, 331))
         self.videoData.setStyleSheet("background-color: rgb(255, 255, 255);\n"
-"border: 2px solid rgb(85, 255, 255);\n"
-"border-radius: 10px;")
+                                     "border: 2px solid rgb(85, 255, 255);\n"
+                                     "border-radius: 10px;")
         self.videoData.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.videoData.setFrameShadow(QtWidgets.QFrame.Raised)
         self.videoData.setObjectName("videoData")
         self.searchResult = QtWidgets.QLabel(self.videoData)
-        self.searchResult.setGeometry(QtCore.QRect(20, 30, 200, 21))
+        self.searchResult.setGeometry(QtCore.QRect(20, 20, 200, 21))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.searchResult.setFont(font)
@@ -141,6 +171,12 @@ class Ui_MainWindow(object):
         self.videoThumbnail.setPixmap(QtGui.QPixmap("assets/unavailable_video.jpg"))
         self.videoThumbnail.setScaledContents(True)
         self.videoThumbnail.setObjectName("videoThumbnail")
+        self.data_state_icon = QtWidgets.QLabel(self.videoData)
+        self.data_state_icon.setGeometry(QtCore.QRect(400, 140, 81, 71))
+        self.data_state_icon.setStyleSheet("border: None")
+        self.data_state_icon.setText("")
+        self.data_state_icon.setScaledContents(True)
+        self.data_state_icon.setObjectName("data_state_icon")
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setGeometry(QtCore.QRect(10, 670, 771, 31))
         self.progressBar.setProperty("value", 0)
@@ -149,18 +185,17 @@ class Ui_MainWindow(object):
         self.downloadStatus = QtWidgets.QLabel(self.centralwidget)
         self.downloadStatus.setGeometry(QtCore.QRect(10, 640, 771, 16))
         self.downloadStatus.setStyleSheet("color: rgb(85, 255, 0);\n"
-"background-color: none")
+                                          "background-color: none")
         self.downloadStatus.setText("")
         self.downloadStatus.setObjectName("downloadStatus")
         MainWindow.setCentralWidget(self.centralwidget)
 
-
         ####################################################################################################
 
         MainWindow.setFixedSize(816, 703)
-        self.search.clicked.connect(self.setVideoData)
-        self.downloadSong.clicked.connect(self.downloadAsSong)
-        self.downloadVideo.clicked.connect(self.downloadAsVideo)
+        self.search.clicked.connect(self.get_video_object)
+        self.downloadSong.clicked.connect(self.download_as_song)
+        self.downloadVideo.clicked.connect(self.download_as_video)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
