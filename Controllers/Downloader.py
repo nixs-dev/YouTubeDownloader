@@ -3,7 +3,7 @@ from http.client import RemoteDisconnected
 from pytube import YouTube
 from PyQt5.QtCore import QThread, pyqtSignal
 import urllib
-
+import certifi
 
 class Downloader(QThread):
     video = None
@@ -34,7 +34,7 @@ class Downloader(QThread):
             video_info = {
                 'title': self.video.title,
                 'author': self.video.author,
-                'thumbnail': urllib.request.urlopen(self.video.thumbnail_url).read()
+                'thumbnail': urllib.request.urlopen(self.video.thumbnail_url, cafile=certifi.where()).read()
             }
 
             self.video_data_ready.emit(video_info)
