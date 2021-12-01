@@ -5,8 +5,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import urllib
 import certifi
 
+
 class Downloader(QThread):
     video = None
+    stream = None
     size = 0
     window = None
     _type = ''
@@ -24,8 +26,10 @@ class Downloader(QThread):
     def start_download(self):
         self.window.link.setEnabled(False)
         self.window.search.setEnabled(False)
-        self.window.downloadSong.setEnabled(False)
-        self.window.downloadVideo.setEnabled(False)
+        self.window.song_option.setEnabled(False)
+        self.window.video_option.setEnabled(False)
+        self.window.download_button.setEnabled(False)
+        self.window.file_format.setEnabled(False)
         self.download()
 
     def get_video_info(self):
@@ -43,26 +47,23 @@ class Downloader(QThread):
         except ConnectionResetError:
             self.video_data_ready.emit({})
 
-    def set_type(self, _type):
-        self._type = _type
+    def set_stream(self, stream):
+        self.stream = stream
 
     def set_size_in_bytes(self, file):
         self.size = file.filesize
 
-    def get_types(self):
-        return self.video.streams
+    def get_streams(self, type_):
+        if type_ == 'song':
+            streams = self.video.streams.filter(only_audio=True)
+        else:
+            streams = self.video.streams.filter(progressive=True)
+
+        return streams
 
     def download(self):
-        file = None
-        
-        if self._type == 'music':
-            file = self.video.streams.filter(only_audio=True, file_extension='mp4').first()
-        elif self._type == 'video':
-            file = self.video.streams.filter(progressive=True, file_extension='mp4').first()
-
-        self.set_size_in_bytes(file)
-
-        file.download()
+        self.set_size_in_bytes(self.stream)
+        self.stream.download()
 
     def get_progress(self, stream, chunk, bytes_remaining):
         percentage = round(100 - ((bytes_remaining/self.size)*100))
@@ -74,5 +75,7 @@ class Downloader(QThread):
 
             self.window.link.setEnabled(True)
             self.window.search.setEnabled(True)
-            self.window.downloadSong.setEnabled(True)
-            self.window.downloadVideo.setEnabled(True)
+            self.window.song_option.setEnabled(True)
+            self.window.video_option.setEnabled(True)
+            self.window.download_button.setEnabled(True)
+            self.window.file_format.setEnabled(True)

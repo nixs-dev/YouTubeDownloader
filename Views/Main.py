@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pytube import exceptions
+from functools import partial
 from Controllers.Downloader import Downloader
 
 
@@ -28,11 +29,14 @@ class Ui_MainWindow(object):
             self.data_state_icon.setMovie(QtGui.QMovie(''))
 
     def set_current_video_as_none(self):
-        self.videoTitle.setText('Nome: ');
-        self.videoChannel.setText('Canal: ');
+        self.videoTitle.setText('Nome: ')
+        self.videoChannel.setText('Canal: ')
         self.videoThumbnail.setPixmap(QtGui.QPixmap('assets/unavailable_video.jpg'))
-        self.downloadVideo.setEnabled(False)
-        self.downloadSong.setEnabled(False)
+        self.download_button.setEnabled(False)
+        self.song_option.setEnabled(False)
+        self.video_option.setEnabled(False)
+        self.file_format.setEnabled(False)
+
         self.progressBar.setValue(0)
 
     def set_video_thumbnail(self, image_data):
@@ -85,22 +89,36 @@ class Ui_MainWindow(object):
         self.searchResult.setStyleSheet("color: rgb(0, 255, 0); border: none")
 
         self.loading_data_state(False)
-        self.downloadVideo.setEnabled(True)
-        self.downloadSong.setEnabled(True)
+        self.download_button.setEnabled(True)
+        self.song_option.setEnabled(True)
+        self.video_option.setEnabled(True)
 
-    def download_as_song(self):
+    def change_output_type(self, selected_type):
+        streams = self.downloader.get_streams(selected_type)
+
+        self.file_format.setEnabled(True)
+        self.file_format.clear()
+
+        for stream in streams:
+            text = '{} - {}'.format(stream.mime_type, (stream.abr if selected_type == 'song' else stream.resolution))
+
+            self.file_format.addItem(text, stream)
+
+    def download(self):
+        stream_selected = self.file_format.itemData(self.file_format.currentIndex())
+
         self.progressBar.setValue(0)
         self.downloadStatus.setText('')
-        self.downloader.set_type('music')
+        self.downloader.set_stream(stream_selected)
         self.downloader.run = self.downloader.start_download
         self.downloader.start()
 
-    def download_as_video(self):
-        self.progressBar.setValue(0)
-        self.downloadStatus.setText('')
-        self.downloader.set_type('video')
-        self.downloader.run = self.downloader.start_download
-        self.downloader.start()
+    def additional_settings(self, MainWindow):
+        MainWindow.setFixedSize(816, 703)
+        self.search.clicked.connect(self.get_video_object)
+        self.download_button.clicked.connect(self.download)
+        self.song_option.toggled.connect(partial(self.change_output_type, 'song'))
+        self.video_option.toggled.connect(partial(self.change_output_type, 'video'))
 
     def setup_ui(self, MainWindow):
         self.this_window = MainWindow
@@ -154,16 +172,11 @@ class Ui_MainWindow(object):
         self.videoChannel.setGeometry(QtCore.QRect(350, 90, 220, 16))
         self.videoChannel.setStyleSheet("border: none")
         self.videoChannel.setObjectName("videoChannel")
-        self.downloadSong = QtWidgets.QPushButton(self.videoData)
-        self.downloadSong.setEnabled(False)
-        self.downloadSong.setGeometry(QtCore.QRect(340, 230, 101, 51))
-        self.downloadSong.setStyleSheet("border: 1px solid black;")
-        self.downloadSong.setObjectName("downloadSong")
-        self.downloadVideo = QtWidgets.QPushButton(self.videoData)
-        self.downloadVideo.setEnabled(False)
-        self.downloadVideo.setGeometry(QtCore.QRect(450, 230, 101, 51))
-        self.downloadVideo.setStyleSheet("border: 1px solid black;")
-        self.downloadVideo.setObjectName("downloadVideo")
+        self.download_button = QtWidgets.QPushButton(self.videoData)
+        self.download_button.setEnabled(False)
+        self.download_button.setGeometry(QtCore.QRect(470, 270, 101, 51))
+        self.download_button.setStyleSheet("border: 1px solid black;")
+        self.download_button.setObjectName("download_button")
         self.videoThumbnail = QtWidgets.QLabel(self.videoData)
         self.videoThumbnail.setGeometry(QtCore.QRect(20, 70, 301, 211))
         self.videoThumbnail.setStyleSheet("border: none")
@@ -172,11 +185,27 @@ class Ui_MainWindow(object):
         self.videoThumbnail.setScaledContents(True)
         self.videoThumbnail.setObjectName("videoThumbnail")
         self.data_state_icon = QtWidgets.QLabel(self.videoData)
-        self.data_state_icon.setGeometry(QtCore.QRect(400, 140, 81, 71))
+        self.data_state_icon.setGeometry(QtCore.QRect(480, 70, 81, 71))
         self.data_state_icon.setStyleSheet("border: None")
         self.data_state_icon.setText("")
         self.data_state_icon.setScaledContents(True)
         self.data_state_icon.setObjectName("data_state_icon")
+        self.song_option = QtWidgets.QRadioButton(self.videoData)
+        self.song_option.setEnabled(False)
+        self.song_option.setGeometry(QtCore.QRect(350, 170, 82, 17))
+        self.song_option.setStyleSheet("border: None;")
+        self.song_option.setObjectName("song_option")
+        self.video_option = QtWidgets.QRadioButton(self.videoData)
+        self.video_option.setEnabled(False)
+        self.video_option.setGeometry(QtCore.QRect(350, 190, 82, 17))
+        self.video_option.setStyleSheet("border: None;")
+        self.video_option.setObjectName("video_option")
+        self.file_format = QtWidgets.QComboBox(self.videoData)
+        self.file_format.setEnabled(False)
+        self.file_format.setGeometry(QtCore.QRect(350, 230, 211, 22))
+        self.file_format.setStyleSheet("border: 1px solid; border-radius: None;")
+        self.file_format.setEditable(True)
+        self.file_format.setObjectName("file_format")
         self.progressBar = QtWidgets.QProgressBar(self.centralwidget)
         self.progressBar.setGeometry(QtCore.QRect(10, 670, 771, 31))
         self.progressBar.setProperty("value", 0)
@@ -192,20 +221,17 @@ class Ui_MainWindow(object):
 
         ####################################################################################################
 
-        MainWindow.setFixedSize(816, 703)
-        self.search.clicked.connect(self.get_video_object)
-        self.downloadSong.clicked.connect(self.download_as_song)
-        self.downloadVideo.clicked.connect(self.download_as_video)
+        self.additional_settings(MainWindow)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "YouTube Downloader"))
         self.search.setText(_translate("MainWindow", "OK"))
         self.searchResult.setText(_translate("MainWindow", "Video não encontrado!"))
         self.videoTitle.setText(_translate("MainWindow", "Nome:"))
         self.videoChannel.setText(_translate("MainWindow", "Canal:"))
-        self.downloadSong.setText(_translate("MainWindow", "Baixar música"))
-        self.downloadVideo.setText(_translate("MainWindow", "Baixar video"))
+        self.download_button.setText(_translate("MainWindow", "Baixar"))
+        self.song_option.setText(_translate("MainWindow", "Song"))
+        self.video_option.setText(_translate("MainWindow", "Video"))
