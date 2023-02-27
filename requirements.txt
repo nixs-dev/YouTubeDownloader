@@ -1,0 +1,4 @@
+PyQt5
+pytube
+urllib3
+certifi

@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pytube import exceptions
 from functools import partial
-from Controllers.Downloader import Downloader
+from controllers.Downloader import Downloader
 
 
 class Ui_MainWindow(object):
